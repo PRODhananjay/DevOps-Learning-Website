@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevOps Pro — Ship Faster. Break Less. Scale Infinitely.</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-void: #040810;
+  --bg-deep: #080f1e;
+  --bg-surface: #0d1830;
+  --bg-card: #111e38;
+  --bg-glass: rgba(17,30,56,0.6);
+  --neon-cyan: #00e5ff;
+  --neon-orange: #ff6b2b;
+  --neon-green: #00ff88;
+  --neon-purple: #bf5fff;
+  --text-primary: #e8eef8;
+  --text-secondary: #7a9cc0;
+  --text-muted: #3d5a7a;
+  --border-glow: rgba(0,229,255,0.2);
+  --border-soft: rgba(122,156,192,0.12);
+  --font-display: 'Orbitron', monospace;
+  --font-code: 'Space Mono', monospace;
+  --font-body: 'Nunito', sans-serif;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg-void);color:var(--text-primary);font-family:var(--font-body);overflow-x:hidden;cursor:none;}
+
+/* Custom cursor */
+.cursor{position:fixed;width:8px;height:8px;background:var(--neon-cyan);border-radius:50%;pointer-events:none;z-index:9999;transition:transform 0.1s;mix-blend-mode:screen;}
+.cursor-ring{position:fixed;width:32px;height:32px;border:1px solid rgba(0,229,255,0.5);border-radius:50%;pointer-events:none;z-index:9998;transition:all 0.15s ease;mix-blend-mode:screen;}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--bg-void);}
+::-webkit-scrollbar-thumb{background:var(--neon-cyan);border-radius:2px;opacity:0.5;}
+
+/* Canvas background */
+#canvas-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;opacity:0.4;}
+
+/* ===== NAV ===== */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 60px;display:flex;justify-content:space-between;align-items:center;transition:all 0.4s;}
+nav.scrolled{background:rgba(4,8,16,0.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border-glow);padding:14px 60px;}
+.nav-logo{font-family:var(--font-display);font-size:1.1rem;font-weight:900;color:var(--neon-cyan);letter-spacing:3px;text-decoration:none;}
+.nav-logo span{color:var(--neon-orange);}
+.nav-links{display:flex;gap:36px;list-style:none;}
+.nav-links a{font-family:var(--font-code);font-size:0.75rem;color:var(--text-secondary);text-decoration:none;letter-spacing:2px;text-transform:uppercase;transition:color 0.3s;position:relative;}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1px;background:var(--neon-cyan);transition:width 0.3s;}
+.nav-links a:hover{color:var(--neon-cyan);}
+.nav-links a:hover::after{width:100%;}
+.nav-cta{font-family:var(--font-code);font-size:0.75rem;color:var(--bg-void);background:var(--neon-cyan);padding:10px 24px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:all 0.3s;}
+.nav-cta:hover{background:var(--neon-orange);}
+
+/* ===== HERO ===== */
+#hero{position:relative;z-index:1;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:120px 60px 80px;}
+.hero-inner{max-width:1100px;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;}
+.hero-badge{font-family:var(--font-code);font-size:0.7rem;color:var(--neon-green);letter-spacing:4px;text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:8px;}
+.hero-badge::before{content:'';width:24px;height:1px;background:var(--neon-green);}
+.hero-title{font-family:var(--font-display);font-size:3.2rem;font-weight:900;line-height:1.05;margin-bottom:24px;}
+.hero-title .line1{color:var(--text-primary);display:block;}
+.hero-title .line2{color:var(--neon-cyan);display:block;text-shadow:0 0 40px rgba(0,229,255,0.4);}
+.hero-title .line3{color:var(--neon-orange);display:block;}
+.hero-desc{font-size:1rem;color:var(--text-secondary);line-height:1.8;margin-bottom:40px;max-width:480px;}
+.hero-actions{display:flex;gap:16px;flex-wrap:wrap;}
+.btn-primary{font-family:var(--font-code);font-size:0.75rem;letter-spacing:2px;text-transform:uppercase;color:var(--bg-void);background:var(--neon-cyan);padding:14px 32px;text-decoration:none;clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);transition:all 0.3s;display:inline-block;}
+.btn-primary:hover{background:var(--neon-orange);transform:translateY(-2px);}
+.btn-outline{font-family:var(--font-code);font-size:0.75rem;letter-spacing:2px;text-transform:uppercase;color:var(--neon-cyan);border:1px solid var(--neon-cyan);padding:14px 32px;text-decoration:none;clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);transition:all 0.3s;display:inline-block;}
+.btn-outline:hover{background:rgba(0,229,255,0.1);}
+.hero-stats{display:flex;gap:40px;margin-top:60px;}
+.stat{text-align:left;}
+.stat-num{font-family:var(--font-display);font-size:2rem;font-weight:900;color:var(--neon-cyan);}
+.stat-label{font-size:0.75rem;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;margin-top:4px;}
+
+/* Terminal */
+.terminal{background:#050d1a;border:1px solid rgba(0,229,255,0.25);border-radius:8px;overflow:hidden;box-shadow:0 0 60px rgba(0,229,255,0.08),0 0 120px rgba(0,229,255,0.04);}
+.terminal-bar{background:#0a1628;padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(0,229,255,0.1);}
+.terminal-dot{width:10px;height:10px;border-radius:50%;}
+.terminal-dot.red{background:#ff5f56;}
+.terminal-dot.yellow{background:#ffbd2e;}
+.terminal-dot.green{background:#27c93f;}
+.terminal-title{font-family:var(--font-code);font-size:0.7rem;color:var(--text-muted);margin-left:8px;letter-spacing:1px;}
+.terminal-body{padding:24px;font-family:var(--font-code);font-size:0.78rem;line-height:2;min-height:300px;}
+.t-line{display:flex;align-items:flex-start;gap:8px;opacity:0;transform:translateY(4px);transition:all 0.3s;}
+.t-line.show{opacity:1;transform:translateY(0);}
+.t-prompt{color:var(--neon-green);}
+.t-cmd{color:var(--text-primary);}
+.t-output{color:var(--text-secondary);padding-left:0;}
+.t-output.success{color:var(--neon-green);}
+.t-output.info{color:var(--neon-cyan);}
+.t-output.warn{color:var(--neon-orange);}
+.t-cursor{display:inline-block;width:8px;height:14px;background:var(--neon-cyan);animation:blink 1s infinite;vertical-align:middle;margin-left:2px;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+
+/* ===== PIPELINE ===== */
+#pipeline{position:relative;z-index:1;padding:100px 60px;}
+.section-header{text-align:center;margin-bottom:80px;}
+.section-tag{font-family:var(--font-code);font-size:0.7rem;color:var(--neon-orange);letter-spacing:4px;text-transform:uppercase;margin-bottom:16px;display:block;}
+.section-title{font-family:var(--font-display);font-size:2.5rem;font-weight:900;color:var(--text-primary);line-height:1.15;}
+.section-title span{color:var(--neon-cyan);}
+.section-desc{font-size:1rem;color:var(--text-secondary);margin-top:16px;max-width:560px;margin-left:auto;margin-right:auto;line-height:1.8;}
+.pipeline-track{display:flex;align-items:center;justify-content:center;gap:0;max-width:1100px;margin:0 auto;position:relative;overflow-x:auto;padding:20px 0;}
+.pipe-stage{display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;min-width:120px;}
+.pipe-icon{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;position:relative;transition:all 0.4s;cursor:default;}
+.pipe-icon::before{content:'';position:absolute;inset:-3px;border-radius:50%;border:2px solid transparent;transition:all 0.4s;}
+.pipe-icon:hover::before{border-color:var(--neon-cyan);box-shadow:0 0 20px rgba(0,229,255,0.4);}
+.pipe-icon.ci{background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);}
+.pipe-icon.build{background:rgba(255,107,43,0.1);border:1px solid rgba(255,107,43,0.3);}
+.pipe-icon.test{background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);}
+.pipe-icon.security{background:rgba(191,95,255,0.1);border:1px solid rgba(191,95,255,0.3);}
+.pipe-icon.deploy{background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);}
+.pipe-icon.monitor{background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);}
+.pipe-label{font-family:var(--font-code);font-size:0.65rem;color:var(--text-secondary);letter-spacing:1px;text-transform:uppercase;text-align:center;}
+.pipe-connector{flex:1;height:2px;background:linear-gradient(90deg,rgba(0,229,255,0.05),rgba(0,229,255,0.4),rgba(0,229,255,0.05));position:relative;min-width:40px;}
+.pipe-connector::after{content:'';position:absolute;top:50%;right:-1px;transform:translateY(-50%);border-left:8px solid rgba(0,229,255,0.4);border-top:5px solid transparent;border-bottom:5px solid transparent;}
+.pipe-packet{position:absolute;top:50%;width:8px;height:8px;background:var(--neon-cyan);border-radius:50%;transform:translateY(-50%);animation:flow 2s ease-in-out infinite;box-shadow:0 0 8px var(--neon-cyan);}
+@keyframes flow{0%{left:0;opacity:0;}20%{opacity:1;}80%{opacity:1;}100%{left:calc(100% - 8px);opacity:0;}}
+
+/* ===== TOOLS ===== */
+#tools{position:relative;z-index:1;padding:100px 60px;}
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:2px;max-width:1200px;margin:0 auto;}
+.tool-card{background:var(--bg-card);border:1px solid var(--border-soft);padding:36px;position:relative;overflow:hidden;cursor:pointer;transition:all 0.4s;group:true;}
+.tool-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--tool-color, var(--neon-cyan));transform:scaleX(0);transition:transform 0.4s;transform-origin:left;}
+.tool-card:hover::before{transform:scaleX(1);}
+.tool-card::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at top left, var(--tool-glow, rgba(0,229,255,0.05)), transparent 60%);opacity:0;transition:opacity 0.4s;}
+.tool-card:hover::after{opacity:1;}
+.tool-card:hover{border-color:var(--tool-color, rgba(0,229,255,0.3));transform:translateY(-4px);}
+.tool-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;}
+.tool-icon-wrap{width:52px;height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;background:var(--tool-bg, rgba(0,229,255,0.1));border:1px solid var(--tool-border, rgba(0,229,255,0.2));}
+.tool-tag{font-family:var(--font-code);font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;border:1px solid;border-radius:2px;color:var(--tool-color, var(--neon-cyan));border-color:var(--tool-color, rgba(0,229,255,0.3));}
+.tool-name{font-family:var(--font-display);font-size:1.2rem;font-weight:700;color:var(--text-primary);margin-bottom:8px;position:relative;z-index:1;}
+.tool-subtitle{font-family:var(--font-code);font-size:0.7rem;color:var(--tool-color, var(--neon-cyan));letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;position:relative;z-index:1;}
+.tool-desc{font-size:0.9rem;color:var(--text-secondary);line-height:1.75;margin-bottom:24px;position:relative;z-index:1;}
+.tool-features{list-style:none;margin-bottom:24px;position:relative;z-index:1;}
+.tool-features li{font-size:0.83rem;color:var(--text-secondary);padding:6px 0;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:8px;}
+.tool-features li::before{content:'▸';color:var(--tool-color, var(--neon-cyan));font-size:0.7rem;}
+.tool-features li:last-child{border-bottom:none;}
+.tool-snippet{background:#050d1a;border-radius:6px;padding:14px 16px;font-family:var(--font-code);font-size:0.72rem;color:var(--neon-green);line-height:1.8;border:1px solid rgba(0,255,136,0.1);position:relative;z-index:1;overflow:hidden;}
+.snippet-comment{color:var(--text-muted);}
+.snippet-keyword{color:var(--neon-orange);}
+.snippet-string{color:var(--neon-cyan);}
+.tool-learn{margin-top:20px;display:flex;align-items:center;gap:8px;font-family:var(--font-code);font-size:0.7rem;color:var(--tool-color, var(--neon-cyan));letter-spacing:2px;text-transform:uppercase;cursor:pointer;position:relative;z-index:1;transition:gap 0.3s;}
+.tool-learn:hover{gap:16px;}
+.tool-expand{max-height:0;overflow:hidden;transition:max-height 0.5s ease;position:relative;z-index:1;}
+.tool-expand.open{max-height:500px;}
+.tool-expand-inner{padding-top:20px;border-top:1px solid var(--border-soft);margin-top:20px;}
+.learn-step{display:flex;gap:16px;margin-bottom:16px;}
+.step-num{font-family:var(--font-display);font-size:0.75rem;font-weight:700;color:var(--tool-color, var(--neon-cyan));min-width:24px;}
+.step-content{font-size:0.85rem;color:var(--text-secondary);line-height:1.7;}
+.step-content strong{color:var(--text-primary);}
+
+/* ===== LEARNING PATH ===== */
+#learning{position:relative;z-index:1;padding:100px 60px;background:linear-gradient(180deg,transparent,var(--bg-deep) 20%,var(--bg-deep) 80%,transparent);}
+.roadmap{max-width:800px;margin:0 auto;position:relative;}
+.roadmap::before{content:'';position:absolute;left:24px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--neon-cyan),var(--neon-purple),var(--neon-orange));opacity:0.3;}
+.roadmap-item{display:flex;gap:32px;margin-bottom:48px;opacity:0;transform:translateX(-30px);transition:all 0.6s;}
+.roadmap-item.visible{opacity:1;transform:translateX(0);}
+.roadmap-marker{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:0.8rem;font-weight:700;flex-shrink:0;position:relative;z-index:1;}
+.roadmap-marker.phase1{background:rgba(0,229,255,0.15);border:2px solid var(--neon-cyan);color:var(--neon-cyan);}
+.roadmap-marker.phase2{background:rgba(0,255,136,0.15);border:2px solid var(--neon-green);color:var(--neon-green);}
+.roadmap-marker.phase3{background:rgba(191,95,255,0.15);border:2px solid var(--neon-purple);color:var(--neon-purple);}
+.roadmap-marker.phase4{background:rgba(255,107,43,0.15);border:2px solid var(--neon-orange);color:var(--neon-orange);}
+.roadmap-content{flex:1;}
+.roadmap-phase{font-family:var(--font-code);font-size:0.65rem;letter-spacing:3px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+.roadmap-title{font-family:var(--font-display);font-size:1.1rem;font-weight:700;color:var(--text-primary);margin-bottom:8px;}
+.roadmap-desc{font-size:0.88rem;color:var(--text-secondary);line-height:1.75;margin-bottom:12px;}
+.roadmap-tags{display:flex;flex-wrap:wrap;gap:8px;}
+.rtag{font-family:var(--font-code);font-size:0.62rem;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border-radius:2px;border:1px solid var(--border-soft);color:var(--text-secondary);}
+
+/* ===== METRICS ===== */
+#metrics{position:relative;z-index:1;padding:100px 60px;}
+.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;max-width:1000px;margin:0 auto;}
+.metric-card{background:var(--bg-card);border:1px solid var(--border-soft);padding:40px 32px;text-align:center;position:relative;overflow:hidden;transition:all 0.4s;}
+.metric-card::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--m-color, var(--neon-cyan));transform:scaleX(0);transition:transform 0.6s;}
+.metric-card.animated::before{transform:scaleX(1);}
+.metric-num{font-family:var(--font-display);font-size:2.8rem;font-weight:900;color:var(--m-color, var(--neon-cyan));line-height:1;margin-bottom:8px;text-shadow:0 0 30px currentColor;}
+.metric-label{font-family:var(--font-code);font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);}
+.metric-sub{font-size:0.75rem;color:var(--text-secondary);margin-top:8px;}
+
+/* ===== GLITCH ===== */
+.glitch{position:relative;display:inline-block;}
+.glitch::before,.glitch::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;height:100%;}
+.glitch::before{color:var(--neon-orange);animation:glitch1 3s infinite;clip-path:polygon(0 0,100% 0,100% 35%,0 35%);}
+.glitch::after{color:var(--neon-cyan);animation:glitch2 3s infinite;clip-path:polygon(0 65%,100% 65%,100% 100%,0 100%);}
+@keyframes glitch1{0%,90%,100%{transform:translate(0);}92%{transform:translate(-2px,-1px);}94%{transform:translate(2px,1px);}96%{transform:translate(-1px,2px);}98%{transform:translate(1px,-1px);}}
+@keyframes glitch2{0%,90%,100%{transform:translate(0);}91%{transform:translate(2px,1px);}93%{transform:translate(-2px,-2px);}95%{transform:translate(1px,1px);}97%{transform:translate(-1px,-1px);}}
+
+/* ===== FOOTER ===== */
+footer{position:relative;z-index:1;padding:60px;border-top:1px solid var(--border-soft);}
+.footer-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px;}
+.footer-logo{font-family:var(--font-display);font-size:0.9rem;font-weight:900;color:var(--neon-cyan);letter-spacing:3px;}
+.footer-logo span{color:var(--neon-orange);}
+.footer-copy{font-family:var(--font-code);font-size:0.65rem;color:var(--text-muted);letter-spacing:1px;}
+.footer-links{display:flex;gap:24px;}
+.footer-links a{font-family:var(--font-code);font-size:0.65rem;color:var(--text-muted);text-decoration:none;letter-spacing:1px;transition:color 0.3s;}
+.footer-links a:hover{color:var(--neon-cyan);}
+
+/* ===== SCROLL ANIMATIONS ===== */
+.fade-up{opacity:0;transform:translateY(40px);transition:all 0.7s ease;}
+.fade-up.visible{opacity:1;transform:translateY(0);}
+.fade-left{opacity:0;transform:translateX(-40px);transition:all 0.7s ease;}
+.fade-left.visible{opacity:1;transform:translateX(0);}
+.delay-1{transition-delay:0.1s;}
+.delay-2{transition-delay:0.2s;}
+.delay-3{transition-delay:0.3s;}
+.delay-4{transition-delay:0.4s;}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:900px){
+  .hero-inner{grid-template-columns:1fr;gap:40px;}
+  .hero-title{font-size:2.2rem;}
+  nav{padding:16px 24px;}
+  #hero,#pipeline,#tools,#learning,#metrics{padding:80px 24px;}
+  .metrics-grid{grid-template-columns:repeat(2,1fr);}
+  .nav-links{display:none;}
+}
+</style>
+</head>
+<body>
+
+<canvas id="canvas-bg"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="#hero" class="nav-logo">Dev<span>Ops</span>PRO</a>
+  <ul class="nav-links">
+    <li><a href="#pipeline">Pipeline</a></li>
+    <li><a href="#tools">Tools</a></li>
+    <li><a href="#learning">Learn</a></li>
+    <li><a href="#metrics">Impact</a></li>
+  </ul>
+  <a href="#tools" class="nav-cta">Get Started</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-badge">DevOps Engineering Platform</div>
+      <h1 class="hero-title">
+        <span class="line1">Build. Deploy.</span>
+        <span class="line2 glitch" data-text="Automate.">Automate.</span>
+        <span class="line3">Scale.</span>
+      </h1>
+      <p class="hero-desc">Master the complete DevOps ecosystem — from containers to pipelines, infrastructure as code to real-time monitoring. Learn by doing, ship with confidence.</p>
+      <div class="hero-actions">
+        <a href="#tools" class="btn-primary">Explore Tools →</a>
+        <a href="#learning" class="btn-outline">Learning Path</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><div class="stat-num" id="s1">0</div><div class="stat-label">Tools Covered</div></div>
+        <div class="stat"><div class="stat-num" id="s2">0</div><div class="stat-label">Hours Content</div></div>
+        <div class="stat"><div class="stat-num" id="s3">0</div><div class="stat-label">Engineers Trained</div></div>
+      </div>
+    </div>
+    <div class="terminal fade-left">
+      <div class="terminal-bar">
+        <div class="terminal-dot red"></div>
+        <div class="terminal-dot yellow"></div>
+        <div class="terminal-dot green"></div>
+        <span class="terminal-title">devops@pipeline ~ terminal</span>
+      </div>
+      <div class="terminal-body" id="terminal-body">
+        <div class="t-line" id="tl0"><span class="t-prompt">▸</span><span class="t-cmd">docker build -t myapp:v2.1 .</span></div>
+        <div class="t-line" id="tl1"><span class="t-output info">[+] Building 3.2s (12/12) FINISHED</span></div>
+        <div class="t-line" id="tl2"><span class="t-prompt">▸</span><span class="t-cmd">kubectl apply -f deployment.yaml</span></div>
+        <div class="t-line" id="tl3"><span class="t-output success">deployment.apps/myapp configured</span></div>
+        <div class="t-line" id="tl4"><span class="t-output success">service/myapp-svc unchanged</span></div>
+        <div class="t-line" id="tl5"><span class="t-prompt">▸</span><span class="t-cmd">terraform apply -auto-approve</span></div>
+        <div class="t-line" id="tl6"><span class="t-output">Plan: 3 to add, 1 to change, 0 to destroy.</span></div>
+        <div class="t-line" id="tl7"><span class="t-output success">Apply complete! Resources: 3 added, 1 changed.</span></div>
+        <div class="t-line" id="tl8"><span class="t-prompt">▸</span><span class="t-cmd">ansible-playbook deploy.yml -i inventory</span></div>
+        <div class="t-line" id="tl9"><span class="t-output warn">PLAY RECAP *** ok=12  changed=4  unreachable=0</span></div>
+        <div class="t-line" id="tl10"><span class="t-prompt">▸</span><span class="t-cursor"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PIPELINE -->
+<section id="pipeline">
+  <div class="section-header fade-up">
+    <span class="section-tag">How It Works</span>
+    <h2 class="section-title">The <span>DevOps</span> Pipeline</h2>
+    <p class="section-desc">A fully automated pipeline moves code from developer commit to production deployment in minutes — not days.</p>
+  </div>
+  <div class="pipeline-track">
+    <div class="pipe-stage fade-up delay-1">
+      <div class="pipe-icon ci">💻</div>
+      <span class="pipe-label">Code &<br>Commit</span>
+    </div>
+    <div class="pipe-connector"><div class="pipe-packet"></div></div>
+    <div class="pipe-stage fade-up delay-2">
+      <div class="pipe-icon build">⚙️</div>
+      <span class="pipe-label">Build &<br>Compile</span>
+    </div>
+    <div class="pipe-connector"><div class="pipe-packet" style="animation-delay:0.5s"></div></div>
+    <div class="pipe-stage fade-up delay-2">
+      <div class="pipe-icon test">🧪</div>
+      <span class="pipe-label">Test &<br>Validate</span>
+    </div>
+    <div class="pipe-connector"><div class="pipe-packet" style="animation-delay:1s"></div></div>
+    <div class="pipe-stage fade-up delay-3">
+      <div class="pipe-icon security">🔒</div>
+      <span class="pipe-label">Security<br>Scan</span>
+    </div>
+    <div class="pipe-connector"><div class="pipe-packet" style="animation-delay:1.5s"></div></div>
+    <div class="pipe-stage fade-up delay-3">
+      <div class="pipe-icon deploy">🚀</div>
+      <span class="pipe-label">Deploy to<br>Prod</span>
+    </div>
+    <div class="pipe-connector"><div class="pipe-packet" style="animation-delay:2s"></div></div>
+    <div class="pipe-stage fade-up delay-4">
+      <div class="pipe-icon monitor">📊</div>
+      <span class="pipe-label">Monitor &<br>Alert</span>
+    </div>
+  </div>
+</section>
+
+<!-- TOOLS -->
+<section id="tools">
+  <div class="section-header fade-up">
+    <span class="section-tag">Core Toolchain</span>
+    <h2 class="section-title">Essential <span>DevOps</span> Tools</h2>
+    <p class="section-desc">Every tool explained from first principles. Click any card to expand the full learning guide with real commands.</p>
+  </div>
+  <div class="tools-grid">
+
+    <!-- Docker -->
+    <div class="tool-card fade-up" style="--tool-color:#00b8d9;--tool-glow:rgba(0,184,217,0.06);--tool-bg:rgba(0,184,217,0.08);--tool-border:rgba(0,184,217,0.2);" onclick="toggleTool(this)">
+      <div class="tool-head">
+        <div class="tool-icon-wrap">🐳</div>
+        <span class="tool-tag">Containers</span>
+      </div>
+      <div class="tool-name">Docker</div>
+      <div class="tool-subtitle">Containerization Engine</div>
+      <p class="tool-desc">Package your application and all its dependencies into a lightweight, portable container that runs identically on any machine — eliminating "works on my machine" forever.</p>
+      <ul class="tool-features">
+        <li>Build once, run anywhere on any OS</li>
+        <li>Isolated environments per service</li>
+        <li>Docker Compose for multi-container apps</li>
+        <li>Docker Hub registry for image sharing</li>
+      </ul>
+      <div class="tool-snippet">
+        <span class="snippet-comment"># Dockerfile example</span><br>
+        <span class="snippet-keyword">FROM</span> node:18-alpine<br>
+        <span class="snippet-keyword">WORKDIR</span> /app<br>
+        <span class="snippet-keyword">COPY</span> . .<br>
+        <span class="snippet-keyword">RUN</span> npm install &amp;&amp; npm run build<br>
+        <span class="snippet-keyword">CMD</span> [<span class="snippet-string">"node"</span>, <span class="snippet-string">"server.js"</span>]
+      </div>
+      <div class="tool-learn">▶ &nbsp;Expand full tutorial</div>
+      <div class="tool-expand">
+        <div class="tool-expand-inner">
+          <div class="learn-step"><div class="step-num">01</div><div class="step-content"><strong>Understand Images vs Containers:</strong> An image is a read-only blueprint. A container is a running instance of that image — like a class vs object in code.</div></div>
+          <div class="learn-step"><div class="step-num">02</div><div class="step-content"><strong>Layered Filesystem:</strong> Every Dockerfile instruction creates a cached layer. Docker only rebuilds changed layers, making builds blazingly fast.</div></div>
+          <div class="learn-step"><div class="step-num">03</div><div class="step-content"><strong>Networking:</strong> Containers communicate via bridge networks. Use <code>docker network create</code> to connect services, or use Docker Compose which auto-creates a shared network.</div></div>
+          <div class="learn-step"><div class="step-num">04</div><div class="step-content"><strong>Volumes for Persistence:</strong> Containers are ephemeral — data dies with them. Mount volumes with <code>-v ./data:/app/data</code> to persist databases and file uploads.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kubernetes -->
+    <div class="tool-card fade-up delay-1" style="--tool-color:#3a7be0;--tool-glow:rgba(58,123,224,0.06);--tool-bg:rgba(58,123,224,0.08);--tool-border:rgba(58,123,224,0.2);" onclick="toggleTool(this)">
+      <div class="tool-head">
+        <div class="tool-icon-wrap">☸️</div>
+        <span class="tool-tag">Orchestration</span>
+      </div>
+      <div class="tool-name">Kubernetes</div>
+      <div class="tool-subtitle">Container Orchestrator</div>
+      <p class="tool-desc">Automatically deploy, scale, and heal containerized applications across a cluster of machines. Kubernetes handles scheduling, load balancing, rolling updates, and self-healing.</p>
+      <ul class="tool-features">
+        <li>Auto-scaling with HPA & VPA</li>
+        <li>Zero-downtime rolling deployments</li>
+        <li>Self-healing: restarts failed pods</li>
+        <li>Service discovery & load balancing</li>
+      </ul>
+      <div class="tool-snippet">
+        <span class="snippet-comment"># scale deployment</span><br>
+        $ kubectl scale deploy/myapp <span class="snippet-string">--replicas=5</span><br>
+        <span class="snippet-comment"># rolling update</span><br>
+        $ kubectl set image deploy/myapp <span class="snippet-string">\</span><br>
+        &nbsp; app=myapp:v2.0<br>
+        <span class="snippet-comment"># check pod status</span><br>
+        $ kubectl get pods -w
+      </div>
+      <div class="tool-learn">▶ &nbsp;Expand full tutorial</div>
+      <div class="tool-expand">
+        <div class="tool-expand-inner">
+          <div class="learn-step"><div class="step-num">01</div><div class="step-content"><strong>Core Objects:</strong> Pods (smallest unit), Deployments (manage pods), Services (stable networking), ConfigMaps/Secrets (configuration). These 4 cover 80% of real-world K8s.</div></div>
+          <div class="learn-step"><div class="step-num">02</div><div class="step-content"><strong>Declarative Model:</strong> Write YAML describing desired state. K8s control loop continuously reconciles reality with desire — this is how self-healing works.</div></div>
+          <div class="learn-step"><div class="step-num">03</div><div class="step-content"><strong>Ingress:</strong> Route external HTTP traffic to internal services. Combine with cert-manager for automatic TLS certificates from Let's Encrypt.</div></div>
+          <div class="learn-step"><div class="step-num">04</div><div class="step-content"><strong>Namespaces:</strong> Partition a single cluster into virtual clusters. Use separate namespaces for dev/staging/prod to share infrastructure safely.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CI/CD -->
+    <div class="tool-card fade-up delay-2" style="--tool-color:#00ff88;--tool-glow:rgba(0,255,136,0.06);--tool-bg:rgba(0,255,136,0.08);--tool-border:rgba(0,255,136,0.2);" onclick="toggleTool(this)">
+      <div class="tool-head">
+        <div class="tool-icon-wrap">🔄</div>
+        <span class="tool-tag">CI/CD</span>
+      </div>
+      <div class="tool-name">GitHub Actions</div>
+      <div class="tool-subtitle">Continuous Integration</div>
+      <p class="tool-desc">Automate every step of your software workflow — testing on every commit, building containers, deploying to cloud — all defined as code in your repository.</p>
+      <ul class="tool-features">
+        <li>Triggered on push, PR, schedule, or API</li>
+        <li>Matrix builds: test on multiple OS/versions</li>
+        <li>6000+ reusable actions marketplace</li>
+        <li>Secrets management built-in</li>
+      </ul>
+      <div class="tool-snippet">
+        <span class="snippet-keyword">on:</span> [push, pull_request]<br>
+        <span class="snippet-keyword">jobs:</span><br>
+        &nbsp; test:<br>
+        &nbsp;&nbsp;&nbsp; runs-on: ubuntu-latest<br>
+        &nbsp;&nbsp;&nbsp; steps:<br>
+        &nbsp;&nbsp;&nbsp;&nbsp; - uses: actions/checkout@v4<br>
+        &nbsp;&nbsp;&nbsp;&nbsp; - run: npm test<br>
+        &nbsp;&nbsp;&nbsp;&nbsp; - run: docker build .
+      </div>
+      <div class="tool-learn">▶ &nbsp;Expand full tutorial</div>
+      <div class="tool-expand">
+        <div class="tool-expand-inner">
+          <div class="learn-step"><div class="step-num">01</div><div class="step-content"><strong>Workflows, Jobs, Steps:</strong> A workflow contains jobs that run in parallel by default. Jobs contain steps (shell commands or actions) that run sequentially.</div></div>
+          <div class="learn-step"><div class="step-num">02</div><div class="step-content"><strong>Environment Protection:</strong> Require manual approval before deploying to production. Create environments in repo Settings with required reviewers.</div></div>
+          <div class="learn-step"><div class="step-num">03</div><div class="step-content"><strong>Caching:</strong> Cache node_modules, pip packages, or Docker layers between runs with <code>actions/cache</code> to cut CI times by 70%.</div></div>
+          <div class="learn-step"><div class="step-num">04</div><div class="step-content"><strong>Reusable Workflows:</strong> Extract common pipeline patterns into reusable workflows. Call them from multiple repos to standardize CI across your org.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Terraform -->
+    <div class="tool-card fade-up" style="--tool-color:#7b61ff;--tool-glow:rgba(123,97,255,0.06);--tool-bg:rgba(123,97,255,0.08);--tool-border:rgba(123,97,255,0.2);" onclick="toggleTool(this)">
+      <div class="tool-head">
+        <div class="tool-icon-wrap">🏗️</div>
+        <span class="tool-tag">IaC</span>
+      </div>
+      <div class="tool-name">Terraform</div>
+      <div class="tool-subtitle">Infrastructure as Code</div>
+      <p class="tool-desc">Define your entire cloud infrastructure — servers, networks, databases, DNS — as version-controlled code. Provision and tear down environments in seconds, repeatably.</p>
+      <ul class="tool-features">
+        <li>Multi-cloud: AWS, GCP, Azure, 1000+ providers</li>
+        <li>State tracking detects drift automatically</li>
+        <li>Plan phase previews changes before apply</li>
+        <li>Modules enable reusable infrastructure</li>
+      </ul>
+      <div class="tool-snippet">
+        <span class="snippet-keyword">resource</span> <span class="snippet-string">"aws_instance" "web"</span> {<br>
+        &nbsp; ami = <span class="snippet-string">"ami-0c55b159cbfafe1f0"</span><br>
+        &nbsp; instance_type = <span class="snippet-string">"t3.micro"</span><br>
+        &nbsp; tags = { Name = <span class="snippet-string">"prod-web"</span> }<br>
+        }<br>
+        $ terraform plan<br>
+        $ terraform apply
+      </div>
+      <div class="tool-learn">▶ &nbsp;Expand full tutorial</div>
+      <div class="tool-expand">
+        <div class="tool-expand-inner">
+          <div class="learn-step"><div class="step-num">01</div><div class="step-content"><strong>State File:</strong> Terraform keeps a <code>terraform.tfstate</code> mapping resources to real infrastructure. Store it remotely in S3 with DynamoDB locking for team use.</div></div>
+          <div class="learn-step"><div class="step-num">02</div><div class="step-content"><strong>Plan Before Apply:</strong> Always run <code>terraform plan</code> first. Read every line — it shows exactly what will be created, modified, or destroyed.</div></div>
+          <div class="learn-step"><div class="step-num">03</div><div class="step-content"><strong>Workspaces:</strong> Use workspaces or separate state files for dev/staging/prod. Never share state between environments.</div></div>
+          <div class="learn-step"><div class="step-num">04</div><div class="step-content"><strong>Data Sources:</strong> Query existing infrastructure with <code>data</code> blocks. Fetch AMI IDs, VPC settings, or certificate ARNs dynamically instead of hardcoding.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ansible -->
+    <div class="tool-card fade-up delay-1" style="--tool-color:#ff6b2b;--tool-glow:rgba(255,107,43,0.06);--tool-bg:rgba(255,107,43,0.08);--tool-border:rgba(255,107,43,0.2);" onclick="toggleTool(this)">
+      <div class="tool-head">
+        <div class="tool-icon-wrap">📜</div>
+        <span class="tool-tag">Config Mgmt</span>
+      </div>
+      <div class="tool-name">Ansible</div>
+      <div class="tool-subtitle">Configuration Management</div>
+      <p class="tool-desc">Agentless automation using simple YAML playbooks. Configure servers, deploy applications, and orchestrate complex multi-tier workflows — all over SSH, no agent required.</p>
+      <ul class="tool-features">
+        <li>Agentless — only SSH required on targets</li>
+        <li>Idempotent tasks — safe to re-run</li>
+        <li>3000+ built-in modules for any task</li>
+        <li>Ansible Galaxy — community roles library</li>
+      </ul>
+      <div class="tool-snippet">
+        <span class="snippet-comment"># site.yml playbook</span><br>
+        - hosts: webservers<br>
+        &nbsp; become: yes<br>
+        &nbsp; tasks:<br>
+        &nbsp; - name: Install nginx<br>
+        &nbsp;&nbsp;&nbsp; apt:<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; name: nginx<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; state: present
+      </div>
+      <div class="tool-learn">▶ &nbsp;Expand full tutorial</div>
+      <div class="tool-expand">
+        <div class="tool-expand-inner">
+          <div class="learn-step"><div class="step-num">01</div><div class="step-content"><strong>Inventory:</strong> Define your servers in an inventory file grouped by role (webservers, dbservers). Use dynamic inventory for cloud providers to auto-discover hosts.</div></div>
+          <div class="learn-step"><div class="step-num">02</div><div class="step-content"><strong>Idempotency:</strong> Run a playbook 10 times safely — it only changes what needs changing. The <code>state: present</code> pattern is the key: describe desired state, not actions.</div></div>
+          <div class="learn-step"><div class="step-num">03</div><div class="step-content"><strong>Roles:</strong> Structure complex playbooks into reusable roles with tasks, handlers, templates, and defaults. Pull community roles from Ansible Galaxy instead of reinventing.</div></div>
+          <div class="learn-step"><div class="step-num">04</div><div class="step-content"><strong>Vault:</strong> Encrypt secrets (passwords, API keys) with <code>ansible-vault encrypt_string</code>. Commit encrypted values safely to git.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prometheus + Grafana -->
+    <div class="tool-card fade-up delay-2" style="--tool-color:#e65000;--tool-glow:rgba(230,80,0,0.06);--tool-bg:rgba(230,80,0,0.08);--tool-border:rgba(230,80,0,0.2);" onclick="toggleTool(this)">
+      <div class="tool-head">
+        <div class="tool-icon-wrap">📊</div>
+        <span class="tool-tag">Observability</span>
+      </div>
+      <div class="tool-name">Prometheus + Grafana</div>
+      <div class="tool-subtitle">Monitoring & Alerting</div>
+      <p class="tool-desc">Collect time-series metrics from every service with Prometheus's pull model, then visualize trends, anomalies, and SLOs on stunning Grafana dashboards. Alert before users notice.</p>
+      <ul class="tool-features">
+        <li>PromQL — powerful query language</li>
+        <li>Alertmanager for on-call routing</li>
+        <li>Grafana dashboards with live data</li>
+        <li>RED method: Rate, Errors, Duration</li>
+      </ul>
+      <div class="tool-snippet">
+        <span class="snippet-comment"># PromQL: error rate</span><br>
+        rate(http_requests_total{<br>
+        &nbsp; status=~<span class="snippet-string">"5.."</span><br>
+        }[5m])<br>
+        <span class="snippet-comment"># Alert rule</span><br>
+        expr: error_rate &gt; 0.01<br>
+        for: 2m → PagerDuty 🔔
+      </div>
+      <div class="tool-learn">▶ &nbsp;Expand full tutorial</div>
+      <div class="tool-expand">
+        <div class="tool-expand-inner">
+          <div class="learn-step"><div class="step-num">01</div><div class="step-content"><strong>Pull vs Push:</strong> Prometheus scrapes metrics endpoints your app exposes. Add a <code>/metrics</code> endpoint using a client library (Go, Python, Node.js) — Prometheus does the rest.</div></div>
+          <div class="learn-step"><div class="step-num">02</div><div class="step-content"><strong>Four Metric Types:</strong> Counter (always increases), Gauge (up/down), Histogram (latency buckets), Summary (quantiles). Master these and you can measure anything.</div></div>
+          <div class="learn-step"><div class="step-num">03</div><div class="step-content"><strong>Golden Signals:</strong> Monitor Latency, Traffic, Errors, and Saturation (the "LTES" signals). Build one Grafana row per service with these four panels minimum.</div></div>
+          <div class="learn-step"><div class="step-num">04</div><div class="step-content"><strong>Alerting Hierarchy:</strong> Write alerts that page humans only for actionable issues. Route to Slack for warnings, PagerDuty for critical. Use inhibition rules to suppress noise during incidents.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Git -->
+    <div class="tool-card fade-up" style="--tool-color:#f05032;--tool-glow:rgba(240,80,50,0.06);--tool-bg:rgba(240,80,50,0.08);--tool-border:rgba(240,80,50,0.2);" onclick="toggleTool(this)">
+      <div class="tool-head">
+        <div class="tool-icon-wrap">🌿</div>
+        <span class="tool-tag">Version Control</span>
+      </div>
+      <div class="tool-name">Git</div>
+      <div class="tool-subtitle">Distributed VCS</div>
+      <p class="tool-desc">The foundation of all DevOps. Git tracks every change to your codebase, enables parallel development via branching, and drives your CI/CD pipeline on every push.</p>
+      <ul class="tool-features">
+        <li>Branching strategies: GitFlow, trunk-based</li>
+        <li>Pull requests for code review gates</li>
+        <li>Git hooks for pre-commit automation</li>
+        <li>Signed commits & branch protection rules</li>
+      </ul>
+      <div class="tool-snippet">
+        <span class="snippet-comment"># feature branch workflow</span><br>
+        $ git checkout -b feature/auth<br>
+        $ git commit -m <span class="snippet-string">"feat: add JWT"</span><br>
+        $ git push origin feature/auth<br>
+        <span class="snippet-comment"># interactive rebase before PR</span><br>
+        $ git rebase -i HEAD~3<br>
+        $ git push --force-with-lease
+      </div>
+      <div class="tool-learn">▶ &nbsp;Expand full tutorial</div>
+      <div class="tool-expand">
+        <div class="tool-expand-inner">
+          <div class="learn-step"><div class="step-num">01</div><div class="step-content"><strong>Commit Hygiene:</strong> Write commits in the conventional format: <code>feat: add login</code>, <code>fix: resolve null ref</code>. Tools like semantic-release use these to auto-generate changelogs and bump versions.</div></div>
+          <div class="learn-step"><div class="step-num">02</div><div class="step-content"><strong>Trunk-Based Development:</strong> Keep branches short-lived (1-2 days max). Merge to main frequently with feature flags to hide incomplete work. This is how elite teams ship fast.</div></div>
+          <div class="learn-step"><div class="step-num">03</div><div class="step-content"><strong>Pre-commit Hooks:</strong> Use the pre-commit framework to run linters, formatters, and secret scanners on every commit locally — catch issues before CI does.</div></div>
+          <div class="learn-step"><div class="step-num">04</div><div class="step-content"><strong>Git Bisect:</strong> <code>git bisect start</code> binary-searches your history to find exactly which commit introduced a bug. Invaluable for debugging regressions in large codebases.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Linux -->
+    <div class="tool-card fade-up delay-1" style="--tool-color:#ffd700;--tool-glow:rgba(255,215,0,0.06);--tool-bg:rgba(255,215,0,0.08);--tool-border:rgba(255,215,0,0.2);" onclick="toggleTool(this)">
+      <div class="tool-head">
+        <div class="tool-icon-wrap">🐧</div>
+        <span class="tool-tag">Foundation</span>
+      </div>
+      <div class="tool-name">Linux & Bash</div>
+      <div class="tool-subtitle">System Mastery</div>
+      <p class="tool-desc">Every cloud server, container, and CI runner runs Linux. Master the shell to automate anything — from log parsing to deployment scripts — in seconds, not hours.</p>
+      <ul class="tool-features">
+        <li>Shell scripting with error handling</li>
+        <li>Process management: systemd, cron</li>
+        <li>Networking: ss, iptables, curl, nc</li>
+        <li>Performance: top, vmstat, strace</li>
+      </ul>
+      <div class="tool-snippet">
+        <span class="snippet-comment">#!/bin/bash</span><br>
+        <span class="snippet-keyword">set</span> -euo pipefail<br>
+        <span class="snippet-keyword">deploy()</span> {<br>
+        &nbsp; echo <span class="snippet-string">"Deploying $1..."</span><br>
+        &nbsp; systemctl restart <span class="snippet-string">"$1"</span><br>
+        &nbsp; <span class="snippet-keyword">if</span> ! systemctl is-active <span class="snippet-string">"$1"</span>; <span class="snippet-keyword">then</span><br>
+        &nbsp;&nbsp;&nbsp; exit 1; <span class="snippet-keyword">fi</span><br>
+        }
+      </div>
+      <div class="tool-learn">▶ &nbsp;Expand full tutorial</div>
+      <div class="tool-expand">
+        <div class="tool-expand-inner">
+          <div class="learn-step"><div class="step-num">01</div><div class="step-content"><strong>Always use <code>set -euo pipefail</code>:</strong> This makes bash scripts exit on errors, unbound variables, and pipeline failures — turning silent failures into loud ones you can debug.</div></div>
+          <div class="learn-step"><div class="step-num">02</div><div class="step-content"><strong>Master Text Processing:</strong> <code>grep</code>, <code>awk</code>, <code>sed</code>, <code>jq</code> are your Swiss Army knives. Parse logs, transform JSON, extract fields — no Python needed for quick tasks.</div></div>
+          <div class="learn-step"><div class="step-num">03</div><div class="step-content"><strong>systemd Services:</strong> Write a <code>.service</code> unit file to run your app as a managed system service with automatic restart on crash, log collection, and dependency ordering.</div></div>
+          <div class="learn-step"><div class="step-num">04</div><div class="step-content"><strong>Signals &amp; Process Groups:</strong> Understand SIGTERM vs SIGKILL. Write signal handlers in your apps to gracefully drain connections before shutdown — critical for zero-downtime deploys.</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- LEARNING PATH -->
+<section id="learning">
+  <div class="section-header fade-up">
+    <span class="section-tag">Your Journey</span>
+    <h2 class="section-title">DevOps <span>Learning Roadmap</span></h2>
+    <p class="section-desc">A structured path from beginner to production-grade DevOps engineer in 4 phases.</p>
+  </div>
+  <div class="roadmap">
+    <div class="roadmap-item" data-delay="0">
+      <div class="roadmap-marker phase1">01</div>
+      <div class="roadmap-content">
+        <div class="roadmap-phase">Phase 1 — Foundation (Weeks 1-4)</div>
+        <div class="roadmap-title">Linux, Git & Scripting</div>
+        <p class="roadmap-desc">Master the command line, understand file systems and processes, write reliable bash scripts, and internalize Git workflows. These skills underpin everything else in the DevOps world.</p>
+        <div class="roadmap-tags">
+          <span class="rtag">Linux CLI</span><span class="rtag">Bash Scripting</span><span class="rtag">Git & GitHub</span><span class="rtag">SSH</span><span class="rtag">Networking Basics</span>
+        </div>
+      </div>
+    </div>
+    <div class="roadmap-item" data-delay="150">
+      <div class="roadmap-marker phase2">02</div>
+      <div class="roadmap-content">
+        <div class="roadmap-phase">Phase 2 — Containers (Weeks 5-8)</div>
+        <div class="roadmap-title">Docker & Kubernetes</div>
+        <p class="roadmap-desc">Containerize real applications, build production-grade Dockerfiles, compose multi-service stacks, then graduate to running production workloads on a Kubernetes cluster.</p>
+        <div class="roadmap-tags">
+          <span class="rtag">Docker</span><span class="rtag">Docker Compose</span><span class="rtag">Kubernetes</span><span class="rtag">Helm Charts</span><span class="rtag">Container Security</span>
+        </div>
+      </div>
+    </div>
+    <div class="roadmap-item" data-delay="300">
+      <div class="roadmap-marker phase3">03</div>
+      <div class="roadmap-content">
+        <div class="roadmap-phase">Phase 3 — Automation (Weeks 9-14)</div>
+        <div class="roadmap-title">CI/CD, IaC & Config Management</div>
+        <p class="roadmap-desc">Build automated pipelines that test, build, and deploy on every commit. Provision cloud infrastructure with Terraform and configure servers at scale with Ansible.</p>
+        <div class="roadmap-tags">
+          <span class="rtag">GitHub Actions</span><span class="rtag">Jenkins</span><span class="rtag">Terraform</span><span class="rtag">Ansible</span><span class="rtag">AWS/GCP</span>
+        </div>
+      </div>
+    </div>
+    <div class="roadmap-item" data-delay="450">
+      <div class="roadmap-marker phase4">04</div>
+      <div class="roadmap-content">
+        <div class="roadmap-phase">Phase 4 — Observability (Weeks 15-20)</div>
+        <div class="roadmap-title">Monitoring, Alerting & SRE</div>
+        <p class="roadmap-desc">Implement the full observability stack: metrics with Prometheus, visualization with Grafana, distributed tracing with Jaeger, logging with Loki. Define SLOs and run production with confidence.</p>
+        <div class="roadmap-tags">
+          <span class="rtag">Prometheus</span><span class="rtag">Grafana</span><span class="rtag">Loki</span><span class="rtag">OpenTelemetry</span><span class="rtag">SRE Practices</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- METRICS -->
+<section id="metrics">
+  <div class="section-header fade-up">
+    <span class="section-tag">By The Numbers</span>
+    <h2 class="section-title">The DevOps <span>Impact</span></h2>
+  </div>
+  <div class="metrics-grid">
+    <div class="metric-card fade-up" style="--m-color:var(--neon-cyan)">
+      <div class="metric-num" data-target="96">0</div>
+      <div class="metric-label">Deploy Frequency</div>
+      <div class="metric-sub">times per day (elite teams)</div>
+    </div>
+    <div class="metric-card fade-up delay-1" style="--m-color:var(--neon-green)">
+      <div class="metric-num" data-target="99" data-suffix=".9%">0</div>
+      <div class="metric-label">Uptime Target</div>
+      <div class="metric-sub">SLO with proper monitoring</div>
+    </div>
+    <div class="metric-card fade-up delay-2" style="--m-color:var(--neon-orange)">
+      <div class="metric-num" data-target="5" data-suffix="min">0</div>
+      <div class="metric-label">Mean Time to Restore</div>
+      <div class="metric-sub">vs 24hrs without DevOps</div>
+    </div>
+    <div class="metric-card fade-up delay-3" style="--m-color:var(--neon-purple)">
+      <div class="metric-num" data-target="2400" data-suffix="x">0</div>
+      <div class="metric-label">Deployment Speed</div>
+      <div class="metric-sub">faster than traditional ops</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">Dev<span>Ops</span>PRO</div>
+    <div class="footer-copy">© 2025 DevOpsPRO — Ship Faster. Break Less. Scale Infinitely.</div>
+    <div class="footer-links">
+      <a href="#tools">Tools</a>
+      <a href="#learning">Roadmap</a>
+      <a href="#pipeline">Pipeline</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Canvas particle grid
+const canvas = document.getElementById('canvas-bg');
+const ctx = canvas.getContext('2d');
+let W, H, particles = [], mouseX = 0, mouseY = 0;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+
+function initParticles() {
+  particles = [];
+  const cols = Math.floor(W / 60);
+  const rows = Math.floor(H / 60);
+  for (let i = 0; i < cols * rows; i++) {
+    particles.push({
+      x: (i % cols) * 60 + 30,
+      y: Math.floor(i / cols) * 60 + 30,
+      baseX: (i % cols) * 60 + 30,
+      baseY: Math.floor(i / cols) * 60 + 30,
+      size: Math.random() * 1.5 + 0.3,
+      speed: Math.random() * 0.02 + 0.01,
+      phase: Math.random() * Math.PI * 2
+    });
+  }
+}
+
+let frame = 0;
+function animateCanvas() {
+  ctx.clearRect(0, 0, W, H);
+  frame++;
+  particles.forEach(p => {
+    const t = frame * p.speed + p.phase;
+    p.x = p.baseX + Math.sin(t) * 4;
+    p.y = p.baseY + Math.cos(t * 0.7) * 4;
+    const dx = mouseX - p.x;
+    const dy = mouseY - p.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const influence = Math.max(0, 1 - dist / 150);
+    const alpha = 0.15 + influence * 0.5;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size + influence * 2, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(0, 229, 255, ${alpha})`;
+    ctx.fill();
+    // Connect nearby particles
+    particles.forEach(p2 => {
+      if (p === p2) return;
+      const d = Math.hypot(p.x - p2.x, p.y - p2.y);
+      if (d < 80) {
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.strokeStyle = `rgba(0, 229, 255, ${(1 - d / 80) * 0.06})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+    });
+  });
+  requestAnimationFrame(animateCanvas);
+}
+
+window.addEventListener('resize', () => { resize(); initParticles(); });
+window.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+resize(); initParticles(); animateCanvas();
+
+// Custom cursor
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let cx = 0, cy = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { cx = e.clientX; cy = e.clientY; });
+(function moveCursor() {
+  rx += (cx - rx) * 0.15;
+  ry += (cy - ry) * 0.15;
+  cursor.style.left = cx - 4 + 'px';
+  cursor.style.top = cy - 4 + 'px';
+  ring.style.left = rx - 16 + 'px';
+  ring.style.top = ry - 16 + 'px';
+  requestAnimationFrame(moveCursor);
+})();
+document.querySelectorAll('a,button,.tool-card,.tool-learn').forEach(el => {
+  el.addEventListener('mouseenter', () => { cursor.style.transform = 'scale(2)'; ring.style.transform = 'scale(1.5)'; });
+  el.addEventListener('mouseleave', () => { cursor.style.transform = 'scale(1)'; ring.style.transform = 'scale(1)'; });
+});
+
+// Navbar scroll
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
+});
+
+// Terminal animation
+const lines = ['tl0','tl1','tl2','tl3','tl4','tl5','tl6','tl7','tl8','tl9','tl10'];
+lines.forEach((id, i) => {
+  setTimeout(() => { const el = document.getElementById(id); if(el) el.classList.add('show'); }, 300 + i * 400);
+});
+
+// Animate terminal in loop
+function replayTerminal() {
+  lines.forEach(id => { const el = document.getElementById(id); if(el) el.classList.remove('show'); });
+  setTimeout(() => {
+    lines.forEach((id, i) => {
+      setTimeout(() => { const el = document.getElementById(id); if(el) el.classList.add('show'); }, i * 400);
+    });
+  }, 500);
+}
+setInterval(replayTerminal, 12000);
+
+// Hero counter animation
+function animateCounter(el, target, suffix = '') {
+  let current = 0;
+  const step = target / 50;
+  const interval = setInterval(() => {
+    current = Math.min(current + step, target);
+    el.textContent = Math.floor(current) + suffix;
+    if (current >= target) clearInterval(interval);
+  }, 30);
+}
+setTimeout(() => {
+  animateCounter(document.getElementById('s1'), 8, '');
+  animateCounter(document.getElementById('s2'), 200, '+');
+  animateCounter(document.getElementById('s3'), 12000, '+');
+}, 800);
+
+// Intersection Observer for animations
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const delay = entry.target.getAttribute('data-delay') || 0;
+      setTimeout(() => entry.target.classList.add('visible'), Number(delay));
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.fade-up, .fade-left, .roadmap-item').forEach(el => observer.observe(el));
+
+// Metrics counter animation
+const metricObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting && !entry.target.classList.contains('animated')) {
+      entry.target.classList.add('animated');
+      const numEl = entry.target.querySelector('.metric-num');
+      const target = Number(numEl.getAttribute('data-target'));
+      const suffix = numEl.getAttribute('data-suffix') || '';
+      animateCounter(numEl, target, suffix);
+    }
+  });
+}, { threshold: 0.5 });
+
+document.querySelectorAll('.metric-card').forEach(el => metricObserver.observe(el));
+
+// Tool card expand
+function toggleTool(card) {
+  const expand = card.querySelector('.tool-expand');
+  const label = card.querySelector('.tool-learn');
+  const isOpen = expand.classList.contains('open');
+  document.querySelectorAll('.tool-expand.open').forEach(e => {
+    e.classList.remove('open');
+    e.closest('.tool-card').querySelector('.tool-learn').textContent = '▶  Expand full tutorial';
+  });
+  if (!isOpen) {
+    expand.classList.add('open');
+    label.textContent = '▼  Collapse tutorial';
+  }
+}
+</script>
+</body>
+</html>
